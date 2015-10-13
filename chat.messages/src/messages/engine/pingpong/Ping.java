@@ -1,34 +1,22 @@
 package messages.engine.pingpong;
 
-import java.net.InetSocketAddress;
-
-
 import messages.engine.AcceptCallback;
 import messages.engine.Channel;
 import messages.engine.ConnectCallback;
 import messages.engine.Engine;
-import messages.engine.Server;
-import messages.engine.pingpong.EnginePingPong;
 
 public class Ping extends Thread{
-	  InetSocketAddress socket_host;
-	  AcceptCallback ac = new AcceptCallBack();
-	  ConnectCallback cc = new ConnectCallBack();
-	  Server s;
-	  Channel ch;
-	  Engine e;
-	  int m_port;
+	int m_port;  
+	Engine e;
+	Channel ch = new ChannelPingPong();
+	ConnectCallback cc = new ConnectCallBack();
 	  
-	  Ping(int port, Engine e, Channel ch) throws Exception {
-		  this.m_port = port;
-		  this.e = e;
-		  this.ch = ch;
-		  
-		  this.socket_host = ch.getRemoteAddress();
-		  e.connect(socket_host.getAddress(), port, cc);
-		  ac.accepted(s, ch);
-
-	  }
+	Ping(int port, Engine e) throws Exception {
+		this.m_port = port;
+		this.e = e;		
+		//Ask this NioEngine to connect to the given port on the given host
+		e.connect(ch.getRemoteAddress().getAddress(), port, cc);
+	}
 	    
 	
 	public void run() {
@@ -38,7 +26,7 @@ public class Ping extends Thread{
 	      System.err.println("Ping: threw an exception: " + ex.getMessage());
 	      ex.printStackTrace(System.err);
 	    }
-	  }
+	}
 	    
 	    
 }

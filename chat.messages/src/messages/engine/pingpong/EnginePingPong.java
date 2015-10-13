@@ -2,6 +2,7 @@ package messages.engine.pingpong;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
@@ -11,18 +12,21 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 import messages.engine.AcceptCallback;
+import messages.engine.Channel;
 import messages.engine.ConnectCallback;
 import messages.engine.Engine;
 import messages.engine.Server;
 
 public class EnginePingPong extends Engine {
 	public Selector m_selector;
-	
+	public SelectionKey m_key;
+	public SocketChannel socketChannel = null;
+	public Channel channel = new ChannelPingPong();
 
 	@Override
 	public void mainloop() {
 		
-		SocketChannel socketChannel = null;
+		
 		 long delay = 0;
 		    for (;;) {
 		      m_selector.select(delay);
@@ -68,18 +72,33 @@ public class EnginePingPong extends Engine {
 		
 	}
 
+//* Ask for this NioEngine to accept connections on the given port,
+//* calling the given callback when a connection has been accepted.
 	@Override
 	public Server listen(int port, AcceptCallback callback) throws IOException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
+
 	@Override
-	public void connect(InetAddress hostAddress, int port,
-			ConnectCallback callback) throws UnknownHostException,
-			SecurityException, IOException {
-		// TODO Auto-generated method stub
-		
+	public void connect(InetAddress hostAddress, int port, ConnectCallback callback) throws UnknownHostException, SecurityException, IOException {
+		// create a non-blocking socket channel
+		socketChannel = SocketChannel.open();
+	    socketChannel.configureBlocking(false);
+	    socketChannel.socket().setTcpNoDelay(true);
+
+	    // be notified when the connection to the server will be accepted
+	    m_key = socketChannel.register(m_selector, SelectionKey.OP_CONNECT);
+
+	    // request to connect to the server
+	    if ( socketChannel.connect(new InetSocketAddress(hostAddress, port)) ){
+	    	// TRUE : If the connection is established immediately
+	    	callback.connected(channel);
+	    }
+	    else {
+	    }
+	   
 	}
 
 }

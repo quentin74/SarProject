@@ -1,5 +1,6 @@
 package messages.engine.pingpong;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -7,29 +8,34 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 
-public class Pong extends Thread {
-	InetAddress m_localhost;
-	  Selector m_selector;
-	  ServerSocketChannel m_sch;
-	  SelectionKey m_skey;
-	  SocketChannel m_ch;
-	  SelectionKey m_key;
-	  int m_port;
-	  EnginePingPong e = new EnginePingPong();
+import messages.engine.AcceptCallback;
+import messages.engine.Engine;
+import messages.engine.Server;
 
-	  public Pong(int port) throws Exception {
-		  m_port = port;
-		  m_localhost = InetAddress.getByName("localhost");
-		  m_selector = SelectorProvider.provider().openSelector();
-		  m_key.interestOps(SelectionKey.OP_ACCEPT);
-	  }
-	  public void run() {
+public class Pong extends Thread {
+	int port;
+	Engine e;
+	AcceptCallback ac = new AcceptCallBack();
+	Server s = new NioServer();
+	
+	public Pong(int port, Engine e) {
+		this.port = port;
+		this.e = e;
+		//Ask for this NioEngine to accept connections on the given port
+		try {
+			this.s = e.listen(port, ac);
+		} catch (IOException exception) {
+			exception.printStackTrace();
+		}
+	}
+	
+	public void run() {
 		    try {
 		      e.mainloop();
 		    } catch (Exception ex) {
 		      System.err.println("Ping: threw an exception: " + ex.getMessage());
 		      ex.printStackTrace(System.err);
 		    }
-		  }
+	}
 	
 }

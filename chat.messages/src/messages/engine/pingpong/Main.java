@@ -8,13 +8,12 @@ public class Main {
 
 	public static void main(String[] args) throws Exception {
 		 Engine e = new EnginePingPong(); 
-		 Channel ch = new ChannelPingPong();
 		 
-		 Ping ping = new Ping(e);
+		 Ping ping = new Ping(1234,e);
 		 Pong pong = new Pong(1234,e);
-		 pong.start();
+		 
 		 ping.start();
-
+		 pong.start();
 	}
 
 }
