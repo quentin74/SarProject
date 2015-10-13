@@ -3,6 +3,7 @@ package messages.engine.pingpong;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.channels.ClosedChannelException;
@@ -86,7 +87,7 @@ private void handleConnect(SelectionKey key) {
 	}
     // register the read interest on the selector"
     try {
-		socketChannel.register(m_selector, SelectionKey.OP_WRITE);
+		socketChannel.register(m_selector, SelectionKey.OP_READ);
 	} catch (ClosedChannelException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -103,17 +104,23 @@ private void handleWrite(SelectionKey key) {
 		
 	}
 
-//* Ask for this NioEngine to accept connections on the given port,
-//* calling the given callback when a connection has been accepted.
 	@Override
 	public Server listen(int port, AcceptCallback callback) throws IOException {
 		m_selector = SelectorProvider.provider().openSelector();
-		// Create a new non-blocking server socket channel"
+		
+		// Create a new non-blocking server socket channel
 		ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);
-		serverSocketChannel.socket().bind(new InetSocketAddress(channel.getRemoteAddress().getAddress(),port));
+		// bind serverSocket with to a specific port
+		ServerSocket serverSocket = serverSocketChannel.socket();
+		serverSocket.bind(new InetSocketAddress(port));
+						
 		// Be notified when connection requests arrive 
 		serverSocketChannel.register(m_selector, SelectionKey.OP_ACCEPT);
+		
+		//AcceptCallback : Callback to notify about an accepted connection
+		//callback.accepted(server,channel); 
+		//callback.accepted(, serverSocket.getChannel());
 		
 		return server;
 	}

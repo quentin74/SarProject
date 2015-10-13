@@ -12,7 +12,7 @@ import messages.engine.AcceptCallback;
 import messages.engine.Engine;
 import messages.engine.Server;
 
-public class Pong extends Thread {
+public class Pong extends Thread implements messages.engine.Server {
 	int port;
 	Engine e;
 	AcceptCallback ac = new AcceptCallBack();
