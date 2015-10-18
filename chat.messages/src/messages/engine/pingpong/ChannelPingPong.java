@@ -1,7 +1,9 @@
 package messages.engine.pingpong;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 
 import javax.sound.sampled.Port;
@@ -10,7 +12,22 @@ import messages.engine.Channel;
 import messages.engine.DeliverCallback;
 import messages.engine.Server;
 
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 public class ChannelPingPong extends Channel {
+	
+	private SocketChannel clientChannel;
+	private InetAddress serverAddress;
+	
+	public ChannelPingPong() throws IOException{
+		clientChannel = SocketChannel.open();
+		clientChannel.configureBlocking(false);
+		
+	}
+		
+		
+	
+	private static final InetSocketAddress InetSocketAddress = null;
 	DeliverCallback callback;
 	
 	@Override
@@ -21,10 +38,10 @@ public class ChannelPingPong extends Channel {
 
 	@Override
 	public InetSocketAddress getRemoteAddress() {
+		return null;
 		
-		InetAddress inet;
-		return inet.getLocalHost().getHostAddress();
 		
+
 		
 		
 	}
@@ -47,8 +64,14 @@ public class ChannelPingPong extends Channel {
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-		
+		Object selector;
+		socketChannel.keyFor(selector).cancel();
+		try{
+			socketChannel.close();
+		} catch (IOException e) {
+			//nothing to do, the channel is already closed
+		}
+
 	}
 
 }

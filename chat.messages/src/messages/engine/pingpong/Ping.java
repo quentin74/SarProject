@@ -1,5 +1,7 @@
 package messages.engine.pingpong;
 
+import java.net.InetSocketAddress;
+
 import messages.engine.AcceptCallback;
 import messages.engine.Channel;
 import messages.engine.ConnectCallback;
@@ -13,6 +15,7 @@ public class Ping extends Thread{
 	  
 	Ping(int port, Engine e) throws Exception {
 		this.m_port = port;
+		InetSocketAddress inetSocketAddress= new InetSocketAddress(m_port);
 		this.e = e;		
 		//Ask this NioEngine to connect to the given port on the given host
 		e.connect(ch.getRemoteAddress().getAddress(), port, cc);
