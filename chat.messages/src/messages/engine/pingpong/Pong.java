@@ -12,20 +12,19 @@ import messages.engine.AcceptCallback;
 import messages.engine.Engine;
 import messages.engine.Server;
 
-public class Pong extends Thread implements messages.engine.Server {
-	int port;
-	Engine e;
+public class Pong extends Thread {
+	Engine e = new EnginePingPong() ;
 	AcceptCallback ac = new AcceptCallBack();
-	Server s = new NioServer();
+	Server s;
 	
-	public Pong(int port, Engine e) {
-		this.port = port;
-		this.e = e;
+	public Pong(int port) {
 		//Ask for this NioEngine to accept connections on the given port
 		try {
 			this.s = e.listen(port, ac);
+			System.out.println("Server : " + s.toString() + " port set to " + port);
 		} catch (IOException exception) {
 			exception.printStackTrace();
+			System.out.println("port " + port + "is already used or can't be bound");
 		}
 	}
 	

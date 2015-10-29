@@ -1,20 +1,36 @@
 package messages.engine.pingpong;
 
+import java.nio.channels.ClosedChannelException;
+
 import messages.engine.AcceptCallback;
 import messages.engine.Channel;
+import messages.engine.DeliverCallback;
 import messages.engine.Server;
 
 public class AcceptCallBack implements AcceptCallback {
 
-	@Override
+	/**
+	  * Callback to notify about an accepted connection.
+	  * @param server
+	  * @param channel
+	  */
 	public void accepted(Server server, Channel channel) {
-		// TODO Auto-generated method stub
+		System.out.println("[AcceptCallBack] : Server " + server.toString() + "Succesfully connected to the port " + server.getPort() + " to " + channel.getRemoteAddress());
+		//DeliverCallback dc = new DeliverCallBack();
+		//channel.setDeliverCallback(dc);
 		
+		String message = "ping" ;
+		channel.send(message.getBytes(), 0, message.getBytes().length);
 	}
 
-	@Override
+	/**
+	  * Callback to notify that a previously accepted channel 
+	  * has been closed.
+	  * @param channel
+	  */
 	public void closed(Channel channel) {
-		// TODO Auto-generated method stub
+		channel.close();
+		System.out.println("[AcceptCallBack] : accepted channel " + channel.toString() + " closed");
 		
 	}
 

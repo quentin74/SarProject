@@ -2,18 +2,28 @@ package messages.engine.pingpong;
 
 import messages.engine.Channel;
 import messages.engine.ConnectCallback;
+import messages.engine.DeliverCallback;
 
 public class ConnectCallBack implements ConnectCallback{
 
-	@Override
+	 /**
+	   * Callback to notify that a previously connected channel has been closed.
+	   * 
+	   * @param channel
+	   */
 	public void closed(Channel channel) {
-		// TODO Auto-generated method stub
+		System.out.println("[ConnectCallBack] : " + channel.getRemoteAddress() + " close ");
 		
 	}
 
-	@Override
+	/**
+	   * Callback to notify that a connection has succeeded.
+	   * @param channel
+	   */
 	public void connected(Channel channel) {
-		// TODO Auto-generated method stub
+		System.out.println("[ConnectCallBack] : " + channel.getRemoteAddress() + " connection succeeded ");
+		//DeliverCallback dc = new DeliverCallBack();
+		//channel.setDeliverCallback(dc);
 		
 	}
 
