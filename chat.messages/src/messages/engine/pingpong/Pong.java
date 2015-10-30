@@ -13,31 +13,13 @@ import messages.engine.AcceptCallback;
 import messages.engine.Engine;
 import messages.engine.Server;
 
-<<<<<<< HEAD
 public class Pong extends Thread {
 	Engine e = new EnginePingPong() ;
-=======
-public class Pong extends Thread{
 	int port;
-	Engine e;
->>>>>>> branch 'master' of https://github.com/quentin74/SarProject.git
 	AcceptCallback ac = new AcceptCallBack();
-<<<<<<< HEAD
 	Server s;
-=======
-	
-	Server s = new ServerPingPong();
->>>>>>> branch 'master' of https://github.com/quentin74/SarProject.git
-	
-<<<<<<< HEAD
+
 	public Pong(int port) {
-=======
-	public Pong(int port, Engine e) {
-		InetSocketAddress isa=new InetSocketAddress("localhost",8080);
-		this.port = port;
-		this.e = e;
->>>>>>> branch 'master' of https://github.com/quentin74/SarProject.git
-		//Ask for this NioEngine to accept connections on the given port
 		try {
 			this.s = e.listen(port, ac);
 			System.out.println("Server : " + s.toString() + " port set to " + port);
