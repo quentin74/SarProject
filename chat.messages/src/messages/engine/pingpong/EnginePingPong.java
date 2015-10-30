@@ -93,6 +93,8 @@ public class EnginePingPong extends Engine {
 			
 			// Création d'un Channel entre Client et Server
 			ChannelPingPong ch = new ChannelPingPong(socketChannel);
+			//Ajout à la liste ServerChannel
+			listeServerChannel.put(m_key,ch);
 			
 			//AcceptCallback : Callback to notify about an accepted connection
 			AcceptCallback ac = listeServer.get(key).getAcceptCallback();

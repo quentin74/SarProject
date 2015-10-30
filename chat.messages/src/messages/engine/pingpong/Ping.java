@@ -9,12 +9,12 @@ import messages.engine.ConnectCallback;
 import messages.engine.Engine;
 
 public class Ping extends Thread{
-	int m_port;  
-	Engine e = new EnginePingPong();
-	ConnectCallback cc = new ConnectCallBack();
+	private int port;  
+	private Engine e = new EnginePingPong();
+	private ConnectCallback cc = new ConnectCallBack();
 	  
 	Ping(int port) throws Exception {
-		this.m_port = port;	
+		this.port = port;	
 		//Ask this NioEngine to connect to the given port on the given host
 		e.connect(InetAddress.getLocalHost(), port, cc);
 		System.out.println("Client port set to " + port + "with hostAdress" + InetAddress.getLocalHost());

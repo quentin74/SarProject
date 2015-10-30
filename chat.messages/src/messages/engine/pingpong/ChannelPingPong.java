@@ -25,7 +25,7 @@ public class ChannelPingPong extends Channel {
 	private SocketChannel clientChannel;
 	private InetAddress serverAddress;
 	
-	public ChannelPingPong() throws IOException{
+	public ChannelPingPong(SocketChannel socketChannel) throws IOException{
 		clientChannel = SocketChannel.open();
 		clientChannel.configureBlocking(false);
 		
@@ -54,7 +54,13 @@ public class ChannelPingPong extends Channel {
 
 	}
 
-	@Override
+	/**
+	   * Sending the given byte array, a copy is made into internal buffers,
+	   * so the array can be reused after sending it.
+	   * @param bytes
+	   * @param offset
+	   * @param length
+	   */
 	public void send(byte[] bytes, int offset, int length) {
 		
 		 /*

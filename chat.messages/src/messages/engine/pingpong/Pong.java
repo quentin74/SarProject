@@ -14,10 +14,10 @@ import messages.engine.Engine;
 import messages.engine.Server;
 
 public class Pong extends Thread {
-	Engine e = new EnginePingPong() ;
-	int port;
-	AcceptCallback ac = new AcceptCallBack();
-	Server s;
+	private int port;
+	private Engine e = new EnginePingPong() ;
+	private AcceptCallback ac = new AcceptCallBack();
+	private Server s;
 
 	public Pong(int port) {
 		try {
