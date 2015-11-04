@@ -9,6 +9,8 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 
+import com.sun.scenario.effect.Effect.AccelType;
+
 import messages.engine.AcceptCallback;
 import messages.engine.Engine;
 import messages.engine.Server;
@@ -21,11 +23,12 @@ public class Pong extends Thread {
 
 	public Pong(int port) {
 		try {
+			this.port = port;
 			this.s = e.listen(port, ac);
-			System.out.println("Server : " + s.toString() + " port set to " + port);
+			System.out.println("Server : port set to " + port + " with hostAdress : " + InetAddress.getLocalHost());
 		} catch (IOException exception) {
 			exception.printStackTrace();
-			System.out.println("port " + port + "is already used or can't be bound");
+			System.out.println("Server : port " + port + "is already used or can't be bound");
 		}
 	}
 	

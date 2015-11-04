@@ -17,7 +17,7 @@ public class Ping extends Thread{
 		this.port = port;	
 		//Ask this NioEngine to connect to the given port on the given host
 		e.connect(InetAddress.getLocalHost(), port, cc);
-		System.out.println("Client port set to " + port + "with hostAdress" + InetAddress.getLocalHost());
+		System.out.println("Client : port set to " + port + " with hostAdress : " + InetAddress.getLocalHost());
 	}
 	    
 	

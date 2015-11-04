@@ -27,14 +27,12 @@ import messages.engine.Engine;
 import messages.engine.Server;
 
 public class EnginePingPong extends Engine {
-	public Selector selector;
-	public HashMap<SelectionKey, ServerPingPong> listeServer;
-	public HashMap<SelectionKey, ClientPingPong> listeClient;
-	public HashMap<SelectionKey, ChannelPingPong> listeServerChannel;
+	private Selector selector;
+	private HashMap<SelectionKey, ChannelPingPong> listeServerChannel;
+	private ServerPingPong server;
+	private ClientPingPong client; 
 	
 	public EnginePingPong() {
-		this.listeServer = new HashMap<SelectionKey, ServerPingPong>();
-		this.listeClient = new HashMap<SelectionKey, ClientPingPong>();
 		this.listeServerChannel = new HashMap<SelectionKey, ChannelPingPong>();
 		
 		try {
@@ -79,6 +77,7 @@ public class EnginePingPong extends Engine {
 		    }
 	}
 
+	// Côté Server
 	private void handleAccept(SelectionKey key) {
 		ServerSocketChannel serverSocketChannel =  (ServerSocketChannel) key.channel();
 	    SocketChannel socketChannel = null;
@@ -91,14 +90,15 @@ public class EnginePingPong extends Engine {
 			// Notifie "EN ATTENTE DE DONNEES"
 			m_key = socketChannel.register(selector, SelectionKey.OP_READ);
 			
-			// Création d'un Channel entre Client et Server
+			// Creation d'un Channel entre Client et Server
 			ChannelPingPong ch = new ChannelPingPong(socketChannel);
-			//Ajout à la liste ServerChannel
+			//Ajout a la liste ServerChannel 
 			listeServerChannel.put(m_key,ch);
 			
 			//AcceptCallback : Callback to notify about an accepted connection
-			AcceptCallback ac = listeServer.get(key).getAcceptCallback();
-			ac.accepted(listeServer.get(m_key),ch);		
+			AcceptCallback ac =  server.getAcceptCallback();
+			ac.accepted(server,ch);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -114,7 +114,7 @@ public class EnginePingPong extends Engine {
 			socketChannel.register(selector, SelectionKey.OP_WRITE); //key.interestOps(SelectionKey.OP_WRITE);
 			
 			//ConnectCallback : Callback to notify about an connection channel has succeeded
-			ConnectCallback cc = listeClient.get(key).getConnectCallback();
+			ConnectCallback cc = client.getConnectCallback();
 			cc.connected(listeServerChannel.get(key));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -136,14 +136,11 @@ public class EnginePingPong extends Engine {
 	
 	public Server listen(int port, AcceptCallback callback) throws IOException {
 		SelectionKey m_key = null;
-		ServerPingPong s = null;
 		
-		// Création du Server
-		s = new ServerPingPong(port, callback);				
-		m_key = s.getServerSocket().register(selector, SelectionKey.OP_ACCEPT);
-		listeServer.put(m_key, s);
-
-		return s;
+		// Creation du Server
+		server = new ServerPingPong(port, callback);				
+		m_key = server.getServerSocket().register(selector, SelectionKey.OP_ACCEPT);
+		return server;
 	}
 
 	/**
@@ -155,12 +152,15 @@ public class EnginePingPong extends Engine {
 	   */
 	public void connect(InetAddress hostAddress, int port, ConnectCallback callback) throws UnknownHostException, SecurityException, IOException {
 		SelectionKey m_key = null;
-		ClientPingPong c = null;
 		
-		c = new ClientPingPong(hostAddress, port, callback);
-		m_key = c.getSocketChannel().register(selector, SelectionKey.OP_CONNECT);
-		//Stockage dans la HashMap listeChannel
-		listeClient.put(m_key, c);
+		client = new ClientPingPong(hostAddress, port, callback);
+		m_key = client.getSocketChannel().register(selector, SelectionKey.OP_CONNECT);
+		
+		// Creation d'un Channel entre Client et Server
+		ChannelPingPong ch = new ChannelPingPong(client.getSocketChannel());
+		//Ajout a la liste ServerChannel 
+		listeServerChannel.put(m_key,ch);
+		
 	}
 
 }
