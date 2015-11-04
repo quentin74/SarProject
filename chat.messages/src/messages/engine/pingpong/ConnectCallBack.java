@@ -22,6 +22,9 @@ public class ConnectCallBack implements ConnectCallback{
 	   */
 	public void connected(Channel channel) {
 		System.out.println("[ConnectCallBack] : " + channel.getRemoteAddress() + " connection succeeded ");
+		// Envoie du message
+		String message = "ping" ;
+		channel.send(message.getBytes(), 0, message.getBytes().length);
 		//DeliverCallback dc = new DeliverCallBack();
 		//channel.setDeliverCallback(dc);
 	}

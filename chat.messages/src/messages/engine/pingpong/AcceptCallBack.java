@@ -19,11 +19,6 @@ public class AcceptCallBack implements AcceptCallback {
 		
 		
 		System.out.println("[AcceptCallBack] : Server accepeted connection to the port " + server.getPort() + " to " + channel.getRemoteAddress());
-		//DeliverCallback dc = new DeliverCallBack();
-		//channel.setDeliverCallback(dc);
-		
-		String message = "ping" ;
-		channel.send(message.getBytes(), 0, message.getBytes().length);
 	}
 
 	/**

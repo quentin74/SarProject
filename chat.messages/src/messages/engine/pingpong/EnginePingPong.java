@@ -27,10 +27,10 @@ import messages.engine.Engine;
 import messages.engine.Server;
 
 public class EnginePingPong extends Engine {
-	private Selector selector;
+	private Selector selector ;
 	private HashMap<SelectionKey, ChannelPingPong> listeServerChannel;
-	private ServerPingPong server;
-	private ClientPingPong client; 
+	private ServerPingPong server = null;
+	private ClientPingPong client = null; 
 	
 	public EnginePingPong() {
 		this.listeServerChannel = new HashMap<SelectionKey, ChannelPingPong>();
