@@ -25,6 +25,8 @@ public class ClientPingPong {
 			socketChannel = SocketChannel.open();
 			socketChannel.configureBlocking(false);
 			socketChannel.connect(new InetSocketAddress(hostAddress, port));
+			System.out.println("Initialisation Client ");
+
 		}catch(IOException e){
 			System.out.println("[ERREUR] Lors de la connexion de la socket channel");
 			e.printStackTrace();

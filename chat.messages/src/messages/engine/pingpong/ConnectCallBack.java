@@ -21,11 +21,10 @@ public class ConnectCallBack implements ConnectCallback{
 	   * @param channel
 	   */
 	public void connected(Channel channel) {
-		System.out.println("[ConnectCallBack] : " + channel.getRemoteAddress() + " connection succeeded ");
+		System.out.println("[ConnectCallBack] : Server " + channel.getRemoteAddress() + " connection succeeded to " + ((ChannelPingPong) channel).getLocalAddress() );
 		// Envoie du message
 		String message = "pingj'éessayeunPeu11290<>&&!:;,nb$£*ù" ;
 		channel.send(message.getBytes(), 0, message.getBytes().length);
-		System.out.println("Message send : "+ message);
 	}
 
 }

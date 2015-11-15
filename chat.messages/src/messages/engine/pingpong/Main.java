@@ -11,9 +11,12 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		Pong pong = new Pong(8080);
 		Ping ping = new Ping(8080);
+		Ping ping2 = new Ping(8080);
 
 		 pong.start();
 		 ping.start();
+		 ping2.start();
+		 
 	}
 
 }

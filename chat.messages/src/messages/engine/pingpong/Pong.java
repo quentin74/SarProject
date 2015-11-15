@@ -17,7 +17,6 @@ public class Pong extends Thread {
 		try {
 			this.port = port;
 			this.s = e.listen(port, ac);
-			System.out.println("Server : port set to " + port + " with hostAdress : " + InetAddress.getLocalHost());
 		} catch (IOException exception) {
 			exception.printStackTrace();
 			System.out.println("Server : port " + port + "is already used or can't be bound");

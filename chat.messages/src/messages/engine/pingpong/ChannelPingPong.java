@@ -1,7 +1,9 @@
 package messages.engine.pingpong;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -41,6 +43,10 @@ public class ChannelPingPong extends Channel {
 		this.readBuffer = ByteBuffer.allocate(0);
 	}
 
+	/**
+	   * Get the Inet socket address for the other side of this channel.
+	   * @return
+	   */
 	public InetSocketAddress getRemoteAddress() {
 		InetSocketAddress inetSocketAdresse =null;		
 		try {
@@ -200,4 +206,14 @@ public class ChannelPingPong extends Channel {
 		return writeBuffer.array();
 	}
 
+	public InetSocketAddress getLocalAddress() {
+		InetSocketAddress inetSocketAdresse =null;		
+		try {
+			inetSocketAdresse = (InetSocketAddress) this.socketChannel.getLocalAddress();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return inetSocketAdresse;
+	}
 }

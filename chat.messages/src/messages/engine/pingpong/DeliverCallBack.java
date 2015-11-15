@@ -14,7 +14,7 @@ public class DeliverCallBack implements DeliverCallback {
 	public void deliver(Channel channel, byte[] bytes) {
 		String message = new String(bytes);
 		String reponse;
-		System.out.println("[DeliverCallBack] : " + channel.getRemoteAddress() + " : " +  message );
+		System.out.println("[DeliverCallBack] : " + channel.getRemoteAddress() + " deliver to " + ( (ChannelPingPong) channel).getLocalAddress() + " message : " +  message );
 		
 		// Envoie réponse
 		if (message.equals("ping")){
@@ -25,7 +25,7 @@ public class DeliverCallBack implements DeliverCallback {
 		}
 		
 		channel.send(reponse.getBytes(), 0, reponse.getBytes().length);
-		System.out.println("Message send : "+ reponse);
+		System.out.println(((ChannelPingPong)channel).getLocalAddress()+ " send : "+ reponse);
 	}
 
 }

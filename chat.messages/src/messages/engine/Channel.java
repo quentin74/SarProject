@@ -37,14 +37,4 @@ public abstract class Channel {
   
   public abstract void close();
 
-public String getLocalAddress() {
-	try {
-		return InetAddress.getLocalHost().toString();
-	} catch (UnknownHostException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	return null;
-}
-
 }

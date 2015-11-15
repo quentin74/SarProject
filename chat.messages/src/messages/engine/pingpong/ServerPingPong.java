@@ -2,8 +2,6 @@ package messages.engine.pingpong;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 
 import messages.engine.AcceptCallback;
@@ -22,6 +20,7 @@ public class ServerPingPong extends Server{
 			serverSocketServer.configureBlocking(false);
 			// bind serverSocket with a specific "port"
 			serverSocketServer.socket().bind(new InetSocketAddress(port));
+			System.out.println("Initialisation Server ");
 		} catch (IOException e) {
 			System.out.println("[ERREUR] Lors de accept connections on the given port " + port);
 			e.printStackTrace();
