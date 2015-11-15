@@ -11,8 +11,6 @@ import java.util.ArrayList;
 
 import javax.sound.sampled.Port;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 import messages.engine.Channel;
 import messages.engine.ConnectCallback;
 import messages.engine.DeliverCallback;
@@ -23,7 +21,6 @@ import java.nio.channels.SocketChannel;
 public class ChannelPingPong extends Channel {
 
 	private SocketChannel socketChannel;
-	private DeliverCallback dc;
 	
 	// List of ByteBuffer
 	private ArrayList<ByteBuffer> listBuffer;
@@ -34,23 +31,24 @@ public class ChannelPingPong extends Channel {
 	private ByteBuffer readBuffer;
 	private ByteBuffer readLength;
 	
+	private DeliverCallback dc = new DeliverCallBack();
+	
 	public enum State {
 		WRITING_LENGTH,WRITING_MSG, WRITING_DONE, READING_LENGTH,READING_MSG,READING_DONE
 	}
+	
 	private State readState = State.READING_DONE;
 	private State writeState = State.WRITING_DONE;
 	
-	
-	
+		
 	
 	public ChannelPingPong(SocketChannel socketChannel) throws IOException{
 		this.socketChannel = socketChannel;
-		this.listBuffer = new ArrayList<ByteBuffer>();	
-	}
-		
-
-	public void setDeliverCallback(DeliverCallback callback) {
-		this.dc = callback;	
+		this.listBuffer = new ArrayList<ByteBuffer>();
+		this.writeLength = ByteBuffer.allocate(4);
+		this.readLength = ByteBuffer.allocate(4);
+		this.writeBuffer = ByteBuffer.allocate(0);
+		this.readBuffer = ByteBuffer.allocate(0);
 	}
 
 	public InetSocketAddress getRemoteAddress() {
@@ -108,19 +106,16 @@ public class ChannelPingPong extends Channel {
 			readLength.clear();
 			readState = State.READING_LENGTH;
 		}
-
 		if(readState == State.READING_LENGTH){
-			try{
+			try{			
+				// length sur 4 bytes
 				nb = socketChannel.read(readLength);
 			}catch(IOException e){
 				this.close();
 			}
-
 			if(nb == -1){
 				this.close();
 			}
-
-
 			if(readLength.remaining() == 0){
 				// return to the position 0 to read at the correct offset
 				readLength.position(0);
@@ -129,7 +124,6 @@ public class ChannelPingPong extends Channel {
 				readState = State.READING_MSG;
 			}
 		}
-
 		if(readState == State.READING_MSG){
 
 			try{
@@ -143,8 +137,6 @@ public class ChannelPingPong extends Channel {
 			}
 
 			if(readBuffer.remaining() == 0){
-				dc.deliver(this, readBuffer.duplicate().array());
-
 				readState = State.READING_DONE;
 			}
 		}
@@ -153,6 +145,7 @@ public class ChannelPingPong extends Channel {
 
 
 	public boolean write() {
+		
 		if(writeState == State.WRITING_DONE){
 			if(listBuffer.size() > 0){
 				writeBuffer = listBuffer.get(0);
@@ -170,7 +163,7 @@ public class ChannelPingPong extends Channel {
 		if(writeState == State.WRITING_LENGTH){
 
 			try{
-				socketChannel.write(writeLength);
+				int nb = socketChannel.write(writeLength);
 			}catch(IOException e){
 				this.close(); 
 				System.out.println("Error during writing length");
@@ -206,6 +199,15 @@ public class ChannelPingPong extends Channel {
 
 		return (listBuffer.size() == 0);
 		
+	}
+
+	@Override
+	public void setDeliverCallback(DeliverCallback callback) {
+		this.dc = callback;	
+	}
+
+	public byte[] writeBuffer() {
+		return writeBuffer.array();
 	}
 
 }

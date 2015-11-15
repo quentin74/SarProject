@@ -1,6 +1,8 @@
 package messages.engine;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -34,5 +36,15 @@ public abstract class Channel {
 
   
   public abstract void close();
+
+public String getLocalAddress() {
+	try {
+		return InetAddress.getLocalHost().toString();
+	} catch (UnknownHostException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	return null;
+}
 
 }

@@ -32,6 +32,8 @@ public class EnginePingPong extends Engine {
 	private ServerPingPong server = null;
 	private ClientPingPong client = null; 
 	
+	private DeliverCallback dc = new DeliverCallBack();
+	
 	public EnginePingPong() {
 		this.listeServerChannel = new HashMap<SelectionKey, ChannelPingPong>();
 		
@@ -99,6 +101,7 @@ public class EnginePingPong extends Engine {
 			AcceptCallback ac =  server.getAcceptCallback();
 			ac.accepted(server,ch);
 			
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -111,7 +114,7 @@ public class EnginePingPong extends Engine {
 		try {
 			socketChannel.finishConnect();
 			// Change interest
-			socketChannel.register(selector, SelectionKey.OP_WRITE); //key.interestOps(SelectionKey.OP_WRITE);
+			socketChannel.register(selector, SelectionKey.OP_WRITE);
 			
 			//ConnectCallback : Callback to notify about an connection channel has succeeded
 			ConnectCallback cc = client.getConnectCallback();
@@ -123,20 +126,37 @@ public class EnginePingPong extends Engine {
 	}
 	
 	private void handleRead(SelectionKey key) {
+		// Change interest
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		listeServerChannel.get(key).read();
+		dc.deliver(listeServerChannel.get(key),listeServerChannel.get(key).writeBuffer());
+		try {
+			socketChannel.register(selector, SelectionKey.OP_WRITE);
+		} catch (ClosedChannelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void handleWrite(SelectionKey key) {
+		boolean end = listeServerChannel.get(key).write();
 		SocketChannel socketChannel = (SocketChannel) key.channel();
-		listeServerChannel.get(key).write();
-		key.interestOps(SelectionKey.OP_READ);
+		if (end){
+			// STOP WRITING Change interest
+			try {
+				socketChannel.register(selector, SelectionKey.OP_READ);
+			} catch (ClosedChannelException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		 
 	}
 
 	
 	public Server listen(int port, AcceptCallback callback) throws IOException {
 		SelectionKey m_key = null;
-		
 		// Creation du Server
 		server = new ServerPingPong(port, callback);				
 		m_key = server.getServerSocket().register(selector, SelectionKey.OP_ACCEPT);
@@ -152,7 +172,6 @@ public class EnginePingPong extends Engine {
 	   */
 	public void connect(InetAddress hostAddress, int port, ConnectCallback callback) throws UnknownHostException, SecurityException, IOException {
 		SelectionKey m_key = null;
-		
 		client = new ClientPingPong(hostAddress, port, callback);
 		m_key = client.getSocketChannel().register(selector, SelectionKey.OP_CONNECT);
 		

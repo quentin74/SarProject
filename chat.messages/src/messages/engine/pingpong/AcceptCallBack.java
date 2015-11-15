@@ -18,7 +18,7 @@ public class AcceptCallBack implements AcceptCallback {
 	public void accepted(Server server, Channel channel) {
 		
 		
-		System.out.println("[AcceptCallBack] : Server accepeted connection to the port " + server.getPort() + " to " + channel.getRemoteAddress());
+		System.out.println("[AcceptCallBack] : Server " + channel.getLocalAddress() + ":" + server.getPort() + " accepted connection to " + channel.getRemoteAddress());
 	}
 
 	/**

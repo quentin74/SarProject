@@ -12,7 +12,20 @@ public class DeliverCallBack implements DeliverCallback {
 	  * @param bytes
 	  */
 	public void deliver(Channel channel, byte[] bytes) {
-		System.out.println("Message received from : " + channel.getRemoteAddress() + " : " + bytes.toString());		
+		String message = new String(bytes);
+		String reponse;
+		System.out.println("[DeliverCallBack] : " + channel.getRemoteAddress() + " : " +  message );
+		
+		// Envoie réponse
+		if (message.equals("ping")){
+			reponse = "pong" ;
+		}
+		else{
+			reponse = "ping" ;
+		}
+		
+		channel.send(reponse.getBytes(), 0, reponse.getBytes().length);
+		System.out.println("Message send : "+ reponse);
 	}
 
 }
