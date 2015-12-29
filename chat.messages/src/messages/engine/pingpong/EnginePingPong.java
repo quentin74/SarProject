@@ -27,15 +27,17 @@ public class EnginePingPong extends Engine {
 	private DeliverCallback dc = new DeliverCallBack();
 	
 	public EnginePingPong() {
+		// create the list of channelPingPong
 		this.listeServerChannel = new HashMap<SelectionKey, ChannelPingPong>();
-		
 		try {
 			this.selector = SelectorProvider.provider().openSelector();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * this loop provide all the event case, for example, if a client is in a connect state, or in a write state
+	 */
 	public void mainloop() {
 		    for (;;) {
 		    	try {
@@ -48,7 +50,7 @@ public class EnginePingPong extends Engine {
 		    			SelectionKey key = (SelectionKey) selectedKeys.next();
 		    		    selectedKeys.remove();
 		    		    if (!key.isValid()) { 
-		    		    	System.out.println("[ERREUR] Key invalide");
+		    		    	System.out.println("[ERREUR] invalid key");
 		    		    	System.exit(-1);
 		    		    } // Handle the event
 		    		    else if (key.isAcceptable()){
@@ -60,7 +62,7 @@ public class EnginePingPong extends Engine {
 		    		    } else if (key.isWritable()) {
 		    		    	handleWrite(key);
 		    		    } else {
-							System.out.println("[ERREUR] Key inconnu");
+							System.out.println("[ERREUR] unknown key");
 							System.exit(-1);
 						}
 		    		    	
@@ -71,7 +73,10 @@ public class EnginePingPong extends Engine {
 		    }
 	}
 
-	// Côté Server
+	/**
+	 * this is the part corresponding to the server
+	 * @param key to know in wich state we are 
+	 */
 	private void handleAccept(SelectionKey key) {
 		ServerSocketChannel serverSocketChannel =  (ServerSocketChannel) key.channel();
 	    SocketChannel socketChannel = null;
@@ -81,42 +86,43 @@ public class EnginePingPong extends Engine {
 			socketChannel = serverSocketChannel.accept();
 			socketChannel.configureBlocking(false);	
 			
-			// Notifie "EN ATTENTE DE DONNEES"
+			// Notification "WAITING FOR DATA"
 			m_key = socketChannel.register(selector, SelectionKey.OP_READ);
 			
-			// Creation d'un Channel entre Client et Server
+			//Channel created between server and client 
 			ChannelPingPong ch = new ChannelPingPong(socketChannel);
-			//Ajout a la liste ServerChannel 
+			//Add a ServerChannel 
 			listeServerChannel.put(m_key,ch);
 			
 			//AcceptCallback : Callback to notify about an accepted connection
 			AcceptCallback ac =  server.getAcceptCallback();
-			ac.accepted(server,ch);
-			
-			
+			ac.accepted(server,ch);	
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * To know if we are in the connection state
+	 * @param key to know in wich state we are 
+	 */
 	private void handleConnect(SelectionKey key) {
 		SocketChannel socketChannel =  (SocketChannel) key.channel();
-	    
-		// finish the connection   
+	    // finish the connection   
 		try {
 			socketChannel.finishConnect();
 			// Change interest
 			socketChannel.register(selector, SelectionKey.OP_WRITE);
-			
 			//ConnectCallback : Callback to notify about an connection channel has succeeded
 			ConnectCallback cc = client.getConnectCallback();
 			cc.connected(listeServerChannel.get(key));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
-	
+	/**
+	 * this methode is used to do everithing in the read state ( reading a message from the client)
+	 * @param key to know in wich state we are
+	 */
 	private void handleRead(SelectionKey key) {
 		// Change interest
 		SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -125,11 +131,13 @@ public class EnginePingPong extends Engine {
 		try {
 			socketChannel.register(selector, SelectionKey.OP_WRITE);
 		} catch (ClosedChannelException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * this methode is used to do everithing in the write state ( writing a message from the client)
+	 * @param key to know in wich state we are
+	 */
 	private void handleWrite(SelectionKey key) {
 		boolean end = listeServerChannel.get(key).write();
 		SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -138,7 +146,6 @@ public class EnginePingPong extends Engine {
 			try {
 				socketChannel.register(selector, SelectionKey.OP_READ);
 			} catch (ClosedChannelException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -146,7 +153,11 @@ public class EnginePingPong extends Engine {
 		 
 	}
 
-	
+	/**
+	 * @param port 
+	 * @param callback
+	 * this methode is use at the creation of the server
+	 */
 	public Server listen(int port, AcceptCallback callback) throws IOException {
 		SelectionKey m_key = null;
 		// Creation du Server
@@ -167,9 +178,9 @@ public class EnginePingPong extends Engine {
 		client = new ClientPingPong(hostAddress, port, callback);
 		m_key = client.getSocketChannel().register(selector, SelectionKey.OP_CONNECT);
 		
-		// Creation d'un Channel entre Client et Server
+		// channel created between client and server
 		ChannelPingPong ch = new ChannelPingPong(client.getSocketChannel());
-		//Ajout a la liste ServerChannel 
+		//add to the server channel list
 		listeServerChannel.put(m_key,ch);
 		
 	}
