@@ -16,7 +16,7 @@ public class DeliverCallBack implements DeliverCallback {
 		String reponse;
 		System.out.println("[DeliverCallBack] : " + channel.getRemoteAddress() + " deliver to " + ( (ChannelPingPong) channel).getLocalAddress() + " message : " +  message );
 		
-		// Envoie réponse
+		//if the server receive a ping message, he answer a pong response, here, we can change the size of the response, it doesnt affect  the result
 		if (message.equals("ping")){
 			reponse = "pong" ;
 		}

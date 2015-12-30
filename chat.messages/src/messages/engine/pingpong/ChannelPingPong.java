@@ -44,7 +44,7 @@ public class ChannelPingPong extends Channel {
 	}
 
 	/**
-	   * Get the Inet socket address for the other side of this channel.
+	   * Get the Inetsocketaddress for the other side of this channel.( for the response)
 	   * @return
 	   */
 	public InetSocketAddress getRemoteAddress() {
@@ -52,7 +52,7 @@ public class ChannelPingPong extends Channel {
 		try {
 			inetSocketAdresse = (InetSocketAddress) this.socketChannel.getRemoteAddress();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}		
 		return inetSocketAdresse;
@@ -66,7 +66,7 @@ public class ChannelPingPong extends Channel {
 	   * @param length
 	   */
 	public void send(byte[] bytes, int offset, int length) {
-		// VERIFICATION
+		// we check if this is correct
 		if(bytes.length <= length && offset < bytes.length){
 			ByteBuffer buffer = ByteBuffer.allocate(length);
 			while(length != 0){
@@ -82,18 +82,22 @@ public class ChannelPingPong extends Channel {
 		}		
 	}
 
-	@Override
+	/**close the socket channel*/
+	
 	public void close() {
 		try {
 			socketChannel.close();
 			System.out.println("Channel closed");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		
 			e.printStackTrace();
 		}
 	}
 
-
+	/** 
+	 * this methode read the message and his size
+	 * 
+	 */
 	public void read() {
 		int nb = 0;
 
@@ -103,8 +107,9 @@ public class ChannelPingPong extends Channel {
 			readState = State.READING_LENGTH;
 		}
 		if(readState == State.READING_LENGTH){
+			// 4 bit length
 			try{			
-				// length sur 4 bytes
+				
 				nb = socketChannel.read(readLength);
 			}catch(IOException e){
 				this.close();
@@ -121,25 +126,32 @@ public class ChannelPingPong extends Channel {
 			}
 		}
 		if(readState == State.READING_MSG){
+			// the message is read
 
 			try{
 				nb = socketChannel.read(readBuffer);
+				// the buffer is read
 			}catch(IOException e){
 				this.close();
 			}
 
 			if(nb == -1){
+			// erreur
 				this.close();
 			}
 
 			if(readBuffer.remaining() == 0){
+				// the reading state is finish
 				readState = State.READING_DONE;
 			}
 		}
 		
 	}
 
-
+/**
+ * 
+ * @return if the buffer is umpty or not
+ */
 	public boolean write() {
 		
 		if(writeState == State.WRITING_DONE){
@@ -160,6 +172,7 @@ public class ChannelPingPong extends Channel {
 
 			try{
 				int nb = socketChannel.write(writeLength);
+				// the number of caracter, we can write
 			}catch(IOException e){
 				this.close(); 
 				System.out.println("Error during writing length");
@@ -168,12 +181,14 @@ public class ChannelPingPong extends Channel {
 			}
 
 			if(writeLength.remaining() == 0){
+				// go in state writting message
 				writeState = State.WRITING_MSG;
 			}
 
 		}
 
 		if(writeState == State.WRITING_MSG){
+			//while the buffer is not umpty, we writte it
 
 			if(writeBuffer.remaining() > 0){
 
@@ -197,21 +212,26 @@ public class ChannelPingPong extends Channel {
 		
 	}
 
-	@Override
+	// give a callback
 	public void setDeliverCallback(DeliverCallback callback) {
 		this.dc = callback;	
 	}
-
+	// give the array of byte to write
 	public byte[] writeBuffer() {
 		return writeBuffer.array();
 	}
 
+	
+/**
+ * 
+ * @return the InetSocketAddress (null if not initialised, in other case it return the server address)
+ */
 	public InetSocketAddress getLocalAddress() {
 		InetSocketAddress inetSocketAdresse =null;		
 		try {
 			inetSocketAdresse = (InetSocketAddress) this.socketChannel.getLocalAddress();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// if there is no inetaddress
 			e.printStackTrace();
 		}		
 		return inetSocketAdresse;
