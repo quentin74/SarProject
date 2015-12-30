@@ -2,6 +2,7 @@ package messages.broadcast;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 
 import messages.engine.AcceptCallback;
 import messages.engine.Channel;
@@ -12,11 +13,13 @@ public class Ping extends Thread{
 	private int port;  
 	private Engine e = new EnginePingPong();
 	private ConnectCallback cc = new ConnectCallBack();
+	private HashSet ports = new HashSet<>();
 	  
-	Ping(int port) throws Exception {
-		this.port = port;	
+	Ping(int port,InetAddress ip, HashSet ports) throws Exception {
+		this.port = port;
+		this.ports = ports;
 		//Ask this NioEngine to connect to the given port on the given host
-		e.connect(InetAddress.getLocalHost(), port, cc);
+		e.connect(ip, port, cc);
 	}
 	    
 	

@@ -9,6 +9,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 
 import messages.engine.Channel;
+import messages.engine.ConnectCallback;
 import messages.engine.DeliverCallback;
 public class ChannelPingPong extends Channel {
 
@@ -23,7 +24,9 @@ public class ChannelPingPong extends Channel {
 	private ByteBuffer readBuffer;
 	private ByteBuffer readLength;
 	
-	private DeliverCallback dc = new DeliverCallBack();
+	private DeliverCallBack dc = new DeliverCallBack();
+	private ConnectCallBack cc = new ConnectCallBack();
+		
 	
 	public enum State {
 		WRITING_LENGTH,WRITING_MSG, WRITING_DONE, READING_LENGTH,READING_MSG,READING_DONE
@@ -34,8 +37,9 @@ public class ChannelPingPong extends Channel {
 	
 		
 	
-	public ChannelPingPong(SocketChannel socketChannel) throws IOException{
+	public ChannelPingPong(SocketChannel socketChannel, ConnectCallback cc) throws IOException{
 		this.socketChannel = socketChannel;
+		this.cc = (ConnectCallBack) cc;
 		this.listBuffer = new ArrayList<ByteBuffer>();
 		this.writeLength = ByteBuffer.allocate(4);
 		this.readLength = ByteBuffer.allocate(4);
@@ -199,7 +203,7 @@ public class ChannelPingPong extends Channel {
 
 	@Override
 	public void setDeliverCallback(DeliverCallback callback) {
-		this.dc = callback;	
+		this.dc = (DeliverCallBack) callback;	
 	}
 
 	public byte[] writeBuffer() {
@@ -215,5 +219,9 @@ public class ChannelPingPong extends Channel {
 			e.printStackTrace();
 		}		
 		return inetSocketAdresse;
+	}
+
+	public ConnectCallback getConnectCallback() {
+		return cc;
 	}
 }
