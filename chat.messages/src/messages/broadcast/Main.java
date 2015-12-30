@@ -17,19 +17,22 @@ public class Main {
 	protected static int nbClient;
 	
 	public static void main(String[] args) throws Exception {
-
-		Pong pong = new Pong(8080);
+		
+		EnginePingPong e = new EnginePingPong();
+		Pong pong = new Pong(e,8080);
 		String file = OPTIONFILENAME;
 		
-		nbClient=1;
-		pong.start();
-		
+		nbClient=2;
 		Ping p[] = new Ping[nbClient];
 		for (int i=0 ; i<nbClient ; i++) {		
 			HashSet h = new HashSet<>();
 			h.add(4242);
-			p[i]= new Ping(pong.getServer().getServerSocket().socket().getLocalPort(),pong.getServer().getServerSocket().socket().getInetAddress(),h);
-		    p[i].start(); //Causes this thread to begin execution; the Java Virtual Machine calls the run method of this thread.
+			p[i]= new Ping(e,pong.getServer().getServerSocket().socket().getLocalPort(),pong.getServer().getServerSocket().socket().getInetAddress(),h);
+		}
+		
+		pong.start();
+		for (int j=0 ; j<nbClient ; j++) {		
+		    p[j].start(); //Causes this thread to begin execution; the Java Virtual Machine calls the run method of this thread.
 		}
 		 
 	}

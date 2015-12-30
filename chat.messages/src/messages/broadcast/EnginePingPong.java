@@ -3,6 +3,7 @@ package messages.broadcast;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
@@ -23,15 +24,16 @@ import messages.broadcast.ChannelPingPong;
 
 public class EnginePingPong extends Engine {
 	private Selector selector ;
-	private HashMap<SelectionKey, ChannelPingPong> listeServerChannel;
-	private ServerPingPong server = null;
+	//private HashMap<SelectionKey, ChannelPingPong> listeServerChannel;
+	//private ServerPingPong server = null;
 	
 	private DeliverCallback dc = new DeliverCallBack();
 	
 	public EnginePingPong() {
-		this.listeServerChannel = new HashMap<SelectionKey, ChannelPingPong>();
+		//this.listeServerChannel = new HashMap<SelectionKey, ChannelPingPong>();
 		
 		try {
+			// Create a new selector
 			this.selector = SelectorProvider.provider().openSelector();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -44,28 +46,31 @@ public class EnginePingPong extends Engine {
 		    		// Wait for an event one of the registered channels
 		    		selector.select();    		
 		    		// Some events have been received
-		    		Iterator<?> selectedKeys = selector.selectedKeys().iterator();
+		    		Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
 		    		
 		    		while (selectedKeys.hasNext()) {
 		    			SelectionKey key = (SelectionKey) selectedKeys.next();
-		    		    selectedKeys.remove();
+		    			selectedKeys.remove();
 		    		    if (!key.isValid()) { 
 		    		    	System.out.println("[ERREUR] Key invalide");
 		    		    	System.exit(-1);
 		    		    } // Handle the event
 		    		    else if (key.isAcceptable()){
+		    		    	// a connection was accepted by a ServerSocketChannel.
 		    		    	handleAccept(key);
 		    		    } else if (key.isConnectable()){
+		    		    	// a connection was established with a remote server.
 		    		    	handleConnect(key);
 		    		    } else if (key.isReadable()){
+		    		    	// a channel is ready for reading
 		    		    	handleRead(key);
 		    		    } else if (key.isWritable()) {
+		    		    	// a channel is ready for writing
 		    		    	handleWrite(key);
 		    		    } else {
 							System.out.println("[ERREUR] Key inconnu");
 							System.exit(-1);
 						}
-		    		    	
 		    		}
 		    	} catch (IOException e) { 
 		    		e.printStackTrace();	    		
@@ -75,29 +80,31 @@ public class EnginePingPong extends Engine {
 
 	// Côté Server
 	private void handleAccept(SelectionKey key) {
+
+	    // For an accept to be pending the channel must be a server socket channel.
 		ServerSocketChannel serverSocketChannel =  (ServerSocketChannel) key.channel();
-	    SocketChannel socketChannel = null;
-	    SelectionKey m_key = null;
+		SocketChannel socketChannel = null;
+		ChannelPingPong ch = null;
+		SelectionKey m_key = null;
+		
 		try {
-				socketChannel = serverSocketChannel.accept();
-				socketChannel.configureBlocking(false);	
-			 
-				//AcceptCallback : Callback to notify about an accepted connection
-			    // Server notifie "PRET POUR LECTURE"
-				m_key = socketChannel.register(selector, SelectionKey.OP_READ);
-				
-				// Creation d'un Channel entre Client et Server
-				ConnectCallBack cc = new ConnectCallBack();
-				ChannelPingPong ch = new ChannelPingPong(socketChannel,cc);
-				//Ajout a la liste ServerChannel 
-				listeServerChannel.put(m_key,ch);
-				
-				AcceptCallback ac =  server.getAcceptCallback();
-				ac.accepted(server,ch);
-					
-				
+			System.out.println("handleAccept");
 			
-			
+			// Accept the connection and make it non-blocking
+		    socketChannel = serverSocketChannel.accept();
+		    socketChannel.configureBlocking(false);
+		    
+		    //Channel created between server and client 
+			ch = new ChannelPingPong(socketChannel);
+		    
+		    // Register the new SocketChannel with our Selector, indicating
+		    // we'd like to be notified when there's data waiting to be read
+		    m_key = socketChannel.register(this.selector, SelectionKey.OP_READ,ch);
+		   
+			//AcceptCallback : Callback to notify about an accepted connection
+			AcceptCallback ac =  ((ServerPingPong)key.attachment()).getAcceptCallback();
+			ac.accepted(((ServerPingPong)key.attachment()),ch);	
+	
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -107,15 +114,13 @@ public class EnginePingPong extends Engine {
 	private void handleConnect(SelectionKey key) {
 		SocketChannel socketChannel =  (SocketChannel) key.channel();
 		
-		// finish the connection   
 		try {
-			socketChannel.finishConnect();
+			System.out.println("handleConnect");
 			// Change interest
-			socketChannel.register(selector, SelectionKey.OP_WRITE);
-			
+			socketChannel.register(selector, SelectionKey.OP_WRITE);			
 			//ConnectCallback : Callback to notify about an connection channel has succeeded
-			ConnectCallback cc = listeServerChannel.get(key).getConnectCallback();
-			cc.connected(listeServerChannel.get(key));
+			ConnectCallback cc = ((ConnectCallback) key.attachment());
+			cc.connected(((ChannelPingPong) key.attachment()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -123,10 +128,12 @@ public class EnginePingPong extends Engine {
 	}
 	
 	private void handleRead(SelectionKey key) {
+		
 		// Change interest
 		SocketChannel socketChannel = (SocketChannel) key.channel();
-		listeServerChannel.get(key).read();
-		dc.deliver(listeServerChannel.get(key),listeServerChannel.get(key).writeBuffer());
+		((ChannelPingPong) key.attachment()).read();
+		dc.deliver(((ChannelPingPong) key.attachment()), ((ChannelPingPong) key.attachment()).writeBuffer());
+		//dc.deliver(listeServerChannel.get(key),listeServerChannel.get(key).writeBuffer());
 		try {
 			socketChannel.register(selector, SelectionKey.OP_WRITE);
 		} catch (ClosedChannelException e) {
@@ -136,7 +143,7 @@ public class EnginePingPong extends Engine {
 	}
 	
 	private void handleWrite(SelectionKey key) {
-		boolean end = listeServerChannel.get(key).write();
+		boolean end =  ((ChannelPingPong) key.attachment()).write();// listeServerChannel.get(key).write();
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		if (end){
 			// STOP WRITING Change interest
@@ -159,17 +166,19 @@ public class EnginePingPong extends Engine {
 	   * @return an NioServer wrapping the server port accepting connections.
 	   * @throws IOException if the port is already used or can't be bound.
 	   */
+
+  
 	public ServerPingPong listen(int port, AcceptCallback callback) throws IOException {
+		System.out.println("listen");
 		SelectionKey m_key = null;
 		// Creation du Server "socket bind au port"
-		this.server = new ServerPingPong(port, callback);
-		    //SocketChannel socketChannel = server.getServerSocket().accept();
-		   
-		    	// Mise de l'interet à ACCEPT -> se déclenche si vérifié
-				m_key = server.getServerSocket().register(selector, SelectionKey.OP_ACCEPT);
-				return server;
-}
-
+		ServerPingPong server = new ServerPingPong(port, callback);
+	
+		// Register the server socket channel, indicating an interest in 
+	    // accepting new connections
+		m_key = server.getServerSocket().register(selector, SelectionKey.OP_ACCEPT,server);
+		return server;		
+		}
 
 	/**
 	   * Ask this NioEngine to connect to the given port on the given host.
@@ -184,17 +193,19 @@ public class EnginePingPong extends Engine {
 		
 		// create a non-blocking socket channel
 				try{
+					System.out.println("connect");
 					socketChannel = SocketChannel.open();
 					// You can set a SocketChannel into non-blocking mode. When you do so, you can call connect(), read() and write() in asynchronous mode. 
 					socketChannel.configureBlocking(false);
 					// connect socketChannel to a remote SocketAddress
 					socketChannel.connect(new InetSocketAddress(hostAddress, port));
-					System.out.println("Initialisation Client "+socketChannel.socket());
-					m_key = socketChannel.register(selector, SelectionKey.OP_CONNECT);
-					// Creation d'un Channel entre Client et Server
-					ChannelPingPong ch = new ChannelPingPong(socketChannel,callback);
-					//Ajout a la liste ServerChannel 
-					listeServerChannel.put(m_key,ch);
+										
+					while(! socketChannel.finishConnect() ){
+					    //wait, or do something else...
+					}// Passe dans le handleAccept
+					
+					System.out.println("Initialisation Client "+socketChannel.socket().getLocalAddress()+":"+socketChannel.socket().getLocalPort()+" accept connection to "+ hostAddress+":"+port);
+					m_key = socketChannel.register(selector, SelectionKey.OP_CONNECT,callback);
 				}catch(IOException e){
 					System.out.println("[ERREUR] Lors de la connexion de la socket channel");
 					e.printStackTrace();

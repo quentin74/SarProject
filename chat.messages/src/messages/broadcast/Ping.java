@@ -10,14 +10,15 @@ import messages.engine.ConnectCallback;
 import messages.engine.Engine;
 
 public class Ping extends Thread{
-	private int port;  
-	private Engine e = new EnginePingPong();
+	private EnginePingPong e ;
+	private int port;
 	private ConnectCallback cc = new ConnectCallBack();
 	private HashSet ports = new HashSet<>();
 	  
-	Ping(int port,InetAddress ip, HashSet ports) throws Exception {
+	Ping(EnginePingPong e, int port,InetAddress ip, HashSet ports) throws Exception {
 		this.port = port;
 		this.ports = ports;
+		this.e = e;
 		//Ask this NioEngine to connect to the given port on the given host
 		e.connect(ip, port, cc);
 	}

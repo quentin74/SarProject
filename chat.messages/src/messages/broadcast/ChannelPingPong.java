@@ -25,7 +25,6 @@ public class ChannelPingPong extends Channel {
 	private ByteBuffer readLength;
 	
 	private DeliverCallBack dc = new DeliverCallBack();
-	private ConnectCallBack cc = new ConnectCallBack();
 		
 	
 	public enum State {
@@ -37,9 +36,8 @@ public class ChannelPingPong extends Channel {
 	
 		
 	
-	public ChannelPingPong(SocketChannel socketChannel, ConnectCallback cc) throws IOException{
+	public ChannelPingPong(SocketChannel socketChannel) throws IOException{
 		this.socketChannel = socketChannel;
-		this.cc = (ConnectCallBack) cc;
 		this.listBuffer = new ArrayList<ByteBuffer>();
 		this.writeLength = ByteBuffer.allocate(4);
 		this.readLength = ByteBuffer.allocate(4);
@@ -221,7 +219,4 @@ public class ChannelPingPong extends Channel {
 		return inetSocketAdresse;
 	}
 
-	public ConnectCallback getConnectCallback() {
-		return cc;
-	}
 }

@@ -11,14 +11,14 @@ import messages.engine.pingpong.ServerPingPong;
 
 public class Pong extends Thread {
 	private int port;
-	private EnginePingPong e = new EnginePingPong() ;
+	private EnginePingPong e;
 	private AcceptCallback ac = new AcceptCallBack();
 	private messages.broadcast.ServerPingPong s;
 
-	public Pong(int port) {
+	public Pong(EnginePingPong e, int port) {
 		try {
 			this.port = port;
-			
+			this.e = e;
 			this.s = e.listen(port, ac);
 		} catch (IOException exception) {
 			exception.printStackTrace();
