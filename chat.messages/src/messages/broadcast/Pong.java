@@ -7,36 +7,20 @@ import java.net.SocketAddress;
 import messages.engine.AcceptCallback;
 import messages.engine.Engine;
 import messages.engine.Server;
-import messages.engine.pingpong.ServerPingPong;
 
-public class Pong extends Thread {
-	private int port;
-	private EnginePingPong e;
-	private AcceptCallback ac = new AcceptCallBack();
-	private messages.broadcast.ServerPingPong s;
 
-	public Pong(EnginePingPong e, int port) {
+public class Pong {
+	
+	public static void main(String[] args) {
 		try {
-			this.port = port;
-			this.e = e;
-			this.s = e.listen(port, ac);
-		} catch (IOException exception) {
-			exception.printStackTrace();
-			System.out.println("Server : port " + port + "is already used or can't be bound");
+			EnginePingPong e = new EnginePingPong();
+			int port = Integer.parseInt(args[0]);
+			
+			e.listen(port, new AcceptCallBack());
+			e.mainloop();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
-	
-	public messages.broadcast.ServerPingPong getServer(){
-		return s;
-	}
-	
-	public void run() {
-		    try {
-		      e.mainloop();
-		    } catch (Exception ex) {
-		      System.err.println("Ping: threw an exception: " + ex.getMessage());
-		      ex.printStackTrace(System.err);
-		    }
-	}
-	
 }

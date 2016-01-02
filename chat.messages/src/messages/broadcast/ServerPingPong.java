@@ -21,7 +21,7 @@ public class ServerPingPong extends Server{
 	
 	public ServerPingPong(int port, AcceptCallback callback) {
 		try {
-			this.hostAddress = InetAddress.getByName("127.0.0.42");
+			this.hostAddress = InetAddress.getByName("localhost");
 			this.port = port;		
 			this.ac = (AcceptCallBack) callback;
 			
@@ -30,6 +30,7 @@ public class ServerPingPong extends Server{
 			serverSocketServer.configureBlocking(false);
 			// Bind the server socket to the specified address and port
 			InetSocketAddress isa = new InetSocketAddress(hostAddress, port);
+			//InetSocketAddress isa = new InetSocketAddress(port);
 			serverSocketServer.socket().bind(isa);
 		   	System.out.println("Initialisation "+serverSocketServer.socket());
 		} catch (IOException e) {

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import messages.engine.Channel;
 import messages.engine.ConnectCallback;
 import messages.engine.DeliverCallback;
+import messages.engine.Util;
 public class ChannelPingPong extends Channel {
 
 	private SocketChannel socketChannel;
@@ -23,6 +24,8 @@ public class ChannelPingPong extends Channel {
 	// ByteBuffers for reading
 	private ByteBuffer readBuffer;
 	private ByteBuffer readLength;
+	
+	ArrayList<ByteBuffer> messages = new ArrayList<ByteBuffer>();
 	
 	private DeliverCallBack dc = new DeliverCallBack();
 		
@@ -96,7 +99,7 @@ public class ChannelPingPong extends Channel {
 	}
 
 
-	public void read() {
+	/*public void read() {
 		int nb = 0;
 
 		if(readState == State.READING_DONE){
@@ -139,6 +142,33 @@ public class ChannelPingPong extends Channel {
 			}
 		}
 		
+	}*/
+public byte[] read() throws IOException {
+		
+		if (readState == State.READING_LENGTH){
+			int nbread = socketChannel.read(readLength);
+			 if (nbread == -1) {
+				 socketChannel.close();
+				 return null;
+			 }
+			if (readLength.remaining() == 0) {
+				readBuffer = ByteBuffer.allocate(Util.readInt32(readLength.array(), 0));
+				readLength=(ByteBuffer) readLength.position(0);
+				readState = State.READING_MSG;
+			}
+		} 
+		
+		if (readState == State.READING_MSG) {
+			socketChannel.read(readBuffer);
+			if (readBuffer.remaining() == 0){ // the message has been fully received
+				  // deliver it"
+				byte[] msg =readBuffer.array();
+				readBuffer = null;
+				readState = State.READING_LENGTH;
+				return msg;
+			}
+		}
+		return null;
 	}
 
 
@@ -198,6 +228,31 @@ public class ChannelPingPong extends Channel {
 		return (listBuffer.size() == 0);
 		
 	}
+
+
+	/*public void write() throws IOException {
+	if(!messages.isEmpty()){
+		if (writeState == State.WRITING_LENGTH) {
+			writeBuffer = messages.get(0);
+			writeLength.position(0);
+			writeLength=writeLength.putInt(0,writeBuffer.remaining());
+			socketChannel.write(writeLength);
+			if (writeLength.remaining() == 0) {
+				writeState = State.WRITING_MSG;
+			}
+		}
+		if (writeState == State.WRITING_MSG) {
+			if (writeBuffer.remaining() > 0) {
+				socketChannel.write(writeBuffer);
+				
+			}
+			if (writeBuffer.remaining() == 0) { // the message has been fully sent"
+				writeBuffer = messages.remove(0);
+				writeState = State.WRITING_LENGTH;
+			}
+		}
+	}
+}*/
 
 	@Override
 	public void setDeliverCallback(DeliverCallback callback) {

@@ -12,6 +12,7 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import messages.broadcast.AcceptCallBack;
 import messages.engine.AcceptCallback;
 import messages.engine.ConnectCallback;
 import messages.engine.DeliverCallback;
@@ -25,6 +26,7 @@ public class EnginePingPong extends Engine {
 	private ClientPingPong client = null; 
 	
 	private DeliverCallback dc = new DeliverCallBack();
+	private AcceptCallBack ac = new AcceptCallBack();
 	
 	public EnginePingPong() {
 		// create the list of channelPingPong
