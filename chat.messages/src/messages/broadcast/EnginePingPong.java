@@ -26,8 +26,8 @@ import messages.broadcast.ChannelPingPong;
 public class EnginePingPong extends Engine {
 	private Selector selector ;
 	private HashMap<SelectionKey, ChannelPingPong> listeChannel;
-	
 	private DeliverCallback dc = new DeliverCallBack();
+	
 	
 	public EnginePingPong() {
 		this.listeChannel = new HashMap<SelectionKey, ChannelPingPong>();
@@ -60,6 +60,7 @@ public class EnginePingPong extends Engine {
 		    		    } else if (key.isConnectable()){
 		    		    	// a connection was established with a remote server.
 		    		    	handleConnect(key);
+		    		    	//handleConnectBroadcast(key);
 		    		    } else if (key.isReadable()){
 		    		    	// a channel is ready for reading
 		    		    	handleRead(key);
@@ -134,7 +135,6 @@ public class EnginePingPong extends Engine {
 		// The message to send to the server
 		byte[] msg=null;
 		
-		// Change interest
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		try {
 			msg = listeChannel.get(key).read();
@@ -212,11 +212,8 @@ public class EnginePingPong extends Engine {
 					// You can set a SocketChannel into non-blocking mode. When you do so, you can call connect(), read() and write() in asynchronous mode. 
 					socketChannel.configureBlocking(false);
 					socketChannel.socket().setTcpNoDelay(true);
-				
-					
 					// connect socketChannel to the server with hostAddress and port
 					socketChannel.connect(new InetSocketAddress(hostAddress, port));
-					
 					}catch(IOException e){
 					System.out.println("[ERREUR] Lors de la connexion de la socket channel");
 					e.printStackTrace();
@@ -229,4 +226,78 @@ public class EnginePingPong extends Engine {
 				//System.out.println("Initialisation Client "+socketChannel.socket().getLocalAddress()+":"+socketChannel.socket().getLocalPort()+" accept connection to "+ hostAddress+":"+port);
 
 	}
+	
+	
+	// FOR BROADCAST
+	
+	public void connectBroadcast(InetAddress hostAddress, int hostPort, ConnectCallback callback, InetAddress remoteAddress, int remotePort ) throws UnknownHostException, SecurityException, IOException {
+		SelectionKey m_key = null;
+		SocketChannel socketChannel = null;
+		
+		// create a non-blocking socket channel
+				try{
+					System.out.println("connect");
+					socketChannel = SocketChannel.open();
+					// You can set a SocketChannel into non-blocking mode. When you do so, you can call connect(), read() and write() in asynchronous mode. 
+					socketChannel.configureBlocking(false);
+					socketChannel.socket().setTcpNoDelay(true);
+					// connect socketChannel to the server with hostAddress and port
+					socketChannel.bind(new InetSocketAddress(remoteAddress,remotePort));
+					socketChannel.connect(new InetSocketAddress(hostAddress, hostPort));
+					System.out.println("Initialisation Client " + socketChannel.getLocalAddress());
+					}catch(IOException e){
+					System.out.println("[ERREUR] Lors de la connexion de la socket channel");
+					e.printStackTrace();
+				}
+				
+				// be notified when the connection to the server will be accepted
+				m_key = socketChannel.register(selector, SelectionKey.OP_CONNECT,callback);
+				ChannelPingPong ch = new ChannelPingPong(socketChannel);
+				listeChannel.put(m_key, ch);
+	}
+	
+	//Coté client
+		private void handleConnectBroadcast(SelectionKey key) {
+			SocketChannel socketChannel =  (SocketChannel) key.channel();
+			try {
+				socketChannel.finishConnect();
+				
+				// Change interest
+				key.interestOps(SelectionKey.OP_READ);	
+				
+					
+				//ConnectCallback : Callback to notify about an connection channel has succeeded
+				ConnectCallback cc = ((ConnectCallback) key.attachment());
+				cc.connected(listeChannel.get(key));
+			} catch (IOException e) {
+				e.printStackTrace();
+				key.cancel(); //Suppression de la clé key avec le selecteur selector
+				return;
+			}
+			
+		}
+	
+		/*private void handleWriteBroadcast(SelectionKey key) {
+			boolean end =  listeChannel.get(key).write();
+			SocketChannel socketChannel = (SocketChannel) key.channel();
+			if (end){
+				
+				//Broadcast
+				Iterator it = listeChannel.entrySet().iterator();
+			    while (it.hasNext()) {
+			        HashMap<SelectionKey, ChannelPingPong> courant = (HashMap<SelectionKey, ChannelPingPong>) it.next();
+			        ((Object) courant).getKey();
+			        System.out.println(courant.getKey() + " = " + courant.getValue());
+			        it.remove(); // avoids a ConcurrentModificationException
+			    }
+			
+				
+				// STOP WRITING Change interest
+				try {
+					socketChannel.register(selector, SelectionKey.OP_READ);
+				} catch (ClosedChannelException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}*/
 }

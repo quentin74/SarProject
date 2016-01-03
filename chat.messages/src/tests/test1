@@ -1,0 +1,5 @@
+Server 8080
+NbClient 3
+Tararaina 127.0.0.42 1234
+Quentin 127.0.0.1 5656
+Host 127.0.0.3 6574
