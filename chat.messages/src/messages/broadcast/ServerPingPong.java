@@ -62,7 +62,7 @@ public class ServerPingPong extends Server{
 		try {
 			serverSocketServer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}			
 	}

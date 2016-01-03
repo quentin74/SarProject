@@ -38,7 +38,9 @@ public class EnginePingPong extends Engine {
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * This is the engine automata 
+	 */
 	public void mainloop() {
 		    for (;;) {
 		    	try {
@@ -78,7 +80,10 @@ public class EnginePingPong extends Engine {
 		    }
 	}
 
-	// Côté Server
+	/**
+	 * this is the part corresponding to the server
+	 * @param key to know in wich state we are 
+	 */
 	private void handleAccept(SelectionKey key) {
 
 	    // For an accept to be pending the channel must be a server socket channel.
@@ -110,7 +115,10 @@ public class EnginePingPong extends Engine {
 		}		
 	}
 
-	//Coté client
+	/**
+	 * To know if we are in the connection state
+	 * @param key to know in wich state we are 
+	 */
 	private void handleConnect(SelectionKey key) {
 		SocketChannel socketChannel =  (SocketChannel) key.channel();
 		try {
@@ -158,8 +166,20 @@ public class EnginePingPong extends Engine {
 		}
 	}
 	
+	
+	
+	/**
+	 * this methode is used to do everithing in the write state ( writing a message from the client)
+	 * @param key to know in wich state we are
+	 */
 	private void handleWrite(SelectionKey key) {
-		boolean end =  listeChannel.get(key).write();
+		boolean end = false;
+		try {
+			end = listeChannel.get(key).write();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		if (end){
 			// STOP WRITING Change interest
