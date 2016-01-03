@@ -25,7 +25,7 @@ public class DeliverCallBack implements DeliverCallback {
 		}
 		
 		channel.send(reponse.getBytes(), 0, reponse.getBytes().length);
-		//System.out.println(((ChannelPingPong)channel).getLocalAddress()+ " send : "+ reponse);
+		
 	}
 
 }

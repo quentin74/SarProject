@@ -143,6 +143,8 @@ public class ChannelPingPong extends Channel {
 		}
 		
 	}*/
+	
+	
 public byte[] read() throws IOException {
 		
 		if (readState == State.READING_LENGTH){
@@ -161,7 +163,7 @@ public byte[] read() throws IOException {
 		if (readState == State.READING_MSG) {
 			socketChannel.read(readBuffer);
 			if (readBuffer.remaining() == 0){ // the message has been fully received
-				  // deliver it"
+				  // envoie le 
 				byte[] msg =readBuffer.array();
 				readBuffer = null;
 				readState = State.READING_LENGTH;
@@ -172,55 +174,54 @@ public byte[] read() throws IOException {
 	}
 
 
-	public boolean write() {
-		
-		if(writeState == State.WRITING_DONE){
-			if(listBuffer.size() > 0){
-				writeBuffer = listBuffer.get(0);
-				listBuffer.remove(0);
-				// Clear all buffer for writing
-				writeBuffer.clear();
-				writeLength.clear();
-				writeLength.putInt(writeBuffer.capacity());
-				writeLength.position(0);
-				writeState = State.WRITING_LENGTH;
-			}
-		}
+public void write(byte[] data, int offset, int length) {
+	messages.add(ByteBuffer.wrap(data, offset, length));
+}
 
 
-		if(writeState == State.WRITING_LENGTH){
-
-			try{
-				int nb = socketChannel.write(writeLength);
-			}catch(IOException e){
-				this.close(); 
-				System.out.println("Error during writing length");
-				e.printStackTrace();
-				System.exit(-1);
-			}
-
-			if(writeLength.remaining() == 0){
-				writeState = State.WRITING_MSG;
-			}
-
-		}
-
-		if(writeState == State.WRITING_MSG){
-
-			if(writeBuffer.remaining() > 0){
+/**
+ * 
+ * @return if the buffer is umpty or not
+ * and if the write methode has worked correctly
+ * 
+ */
+	public boolean write() throws IOException {
+		if(!messages.isEmpty()){
+			if(writeState == State.WRITING_LENGTH){
 
 				try{
-					socketChannel.write(writeBuffer);
+					writeBuffer = messages.get(0);
+					writeLength.position(0);
+					writeLength=writeLength.putInt(0,writeBuffer.remaining());
+					int nb = socketChannel.write(writeLength);
 				}catch(IOException e){
 					this.close(); 
-					System.out.println("Error during writing message");
+					System.out.println("Error during writing length");
 					e.printStackTrace();
 					System.exit(-1);
 				}
+
+				if(writeLength.remaining() == 0){
+					writeState = State.WRITING_MSG;
+				}
+
 			}
 
-			if(writeBuffer.remaining() == 0){
-				writeState = State.WRITING_DONE;
+			if(writeState == State.WRITING_MSG){
+				if(writeBuffer.remaining() > 0){
+					try{
+						socketChannel.write(writeBuffer);
+					}catch(IOException e){
+						this.close(); 
+						System.out.println("Error during writing message");
+						e.printStackTrace();
+						System.exit(-1);
+					}
+				}
+
+				if(writeBuffer.remaining() == 0){
+					writeState = State.WRITING_DONE;
+				}
 			}
 		}
 
@@ -229,30 +230,6 @@ public byte[] read() throws IOException {
 		
 	}
 
-
-	/*public void write() throws IOException {
-	if(!messages.isEmpty()){
-		if (writeState == State.WRITING_LENGTH) {
-			writeBuffer = messages.get(0);
-			writeLength.position(0);
-			writeLength=writeLength.putInt(0,writeBuffer.remaining());
-			socketChannel.write(writeLength);
-			if (writeLength.remaining() == 0) {
-				writeState = State.WRITING_MSG;
-			}
-		}
-		if (writeState == State.WRITING_MSG) {
-			if (writeBuffer.remaining() > 0) {
-				socketChannel.write(writeBuffer);
-				
-			}
-			if (writeBuffer.remaining() == 0) { // the message has been fully sent"
-				writeBuffer = messages.remove(0);
-				writeState = State.WRITING_LENGTH;
-			}
-		}
-	}
-}*/
 
 	@Override
 	public void setDeliverCallback(DeliverCallback callback) {
@@ -268,7 +245,7 @@ public byte[] read() throws IOException {
 		try {
 			inetSocketAdresse = (InetSocketAddress) this.socketChannel.getLocalAddress();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}		
 		return inetSocketAdresse;
